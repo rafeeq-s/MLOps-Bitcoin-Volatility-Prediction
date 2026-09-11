@@ -1,0 +1,10 @@
+data:
+  coin_id: "bitcoin"
+  vs_currency: "usd"
+  days: 365
+  raw_path: "data/raw/bitcoin_raw_market_data.csv"
+  processed_path: "data/processed/bitcoin_features.csv"
+
+model:
+  target: "close_price"
+  horizon_days: 1
