@@ -1,5 +1,9 @@
 # MLOps: Sistem Prediksi Harga dan Volatilitas Bitcoin
 
+![Python Version](https://img.shields.io/badge/python-3.10-blue.svg)
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/rafeeq-s/MLOps-Bitcoin-Volatility-Prediction)
+
 Repositori ini berisi fondasi teknis dan arsitektur MLOps untuk prediksi deret waktu (*time-series regression*) harga penutupan dan estimasi volatilitas Bitcoin (BTC) menggunakan data historis dari CoinGecko API.
 
 ---
