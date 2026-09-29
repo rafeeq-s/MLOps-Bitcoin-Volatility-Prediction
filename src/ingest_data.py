@@ -1,16 +1,14 @@
 """
 src/ingest_data.py
-Modul untuk penarikan data dinamis BTC/USD secara berkala.
+Modul penarikan data dinamis Bitcoin dari CoinGecko Public REST API sesuai LK-03.
 """
 from datetime import datetime
-import json
 import logging
 from pathlib import Path
 import sys
 import pandas as pd
 import requests
 
-# Konfigurasi Logging
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
@@ -21,52 +19,61 @@ RAW_DATA_DIR = Path("data/raw")
 RAW_DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 
-def fetch_bitcoin_data(symbol: str = "BTCUSDT", interval: str = "1d", limit: int = 100) -> pd.DataFrame:
-    """Mengambil data OHLCV Bitcoin dari Binance Public API."""
-    url = "https://api.binance.com/api/v3/klines"
-    params = {"symbol": symbol, "interval": interval, "limit": limit}
+def get_crypto_raw_data(coin_id: str = "bitcoin", vs_currency: str = "usd", days: int = 180) -> pd.DataFrame:
+    """
+    Mengambil data mentah (Price, Volume, Market Cap) dari CoinGecko Public API
+    sesuai spesifikasi LK-03.
+    """
+    url = f"https://api.coingecko.com/api/v3/coins/{coin_id}/market_chart"
+    params = {
+        "vs_currency": vs_currency,
+        "days": days,
+        "interval": "daily",
+    }
+    headers = {"accept": "application/json"}
 
-    logging.info("Mengambil data dari %s dengan parameter %s...", url, params)
+    logging.info("Mengambil data dari CoinGecko (%s, %s hari)...", coin_id, days)
     try:
-        response = requests.get(url, params=params, timeout=15)
+        response = requests.get(url, params=params, headers=headers, timeout=20)
         response.raise_for_status()
         data = response.json()
-    except requests.RequestException as exc:
-        logging.error("Gagal menarik data dari API: %s", exc)
+    except requests.RequestException as err:
+        logging.error("Gagal menarik data CoinGecko: %s", err)
         raise
 
-    columns = [
-        "open_time",
-        "open",
-        "high",
-        "low",
-        "close",
-        "volume",
-        "close_time",
-        "quote_asset_volume",
-        "number_of_trades",
-        "taker_buy_base_asset_volume",
-        "taker_buy_quote_asset_volume",
-        "ignore",
-    ]
-    df = pd.DataFrame(data, columns=columns)
-    df["timestamp"] = pd.to_datetime(df["open_time"], unit="ms")
+    # Ekstraksi komponen data
+    df_price = pd.DataFrame(data["prices"], columns=["timestamp", "price"])
+    df_vol = pd.DataFrame(data["total_volumes"], columns=["timestamp", "volume_24h"])
+    df_mc = pd.DataFrame(data["market_caps"], columns=["timestamp", "market_cap"])
+
+    # Menggabungkan berdasarkan timestamp
+    df = df_price.merge(df_vol, on="timestamp").merge(df_mc, on="timestamp")
+
+    # Konversi timestamp epoch (ms) ke representasi tanggal terbaca
+    df["datetime"] = pd.to_datetime(df["timestamp"], unit="ms").dt.date
+
+    # Urutkan kolom sesuai skema LK-03
+    df = df[["timestamp", "datetime", "price", "volume_24h", "market_cap"]]
     return df
 
 
 def save_raw_data(df: pd.DataFrame) -> Path:
-    """Menyimpan data mentah dengan penamaan file berbasis timestamp (non-destruktif)."""
+    """Menyimpan data mentah dengan timestamp untuk mendukung simulasi periodik non-destruktif."""
     current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
     file_path = RAW_DATA_DIR / f"btc_raw_{current_time}.csv"
+    
     df.to_csv(file_path, index=False)
+    # Menyimpan salinan btc_raw.csv default sesuai LK-03
+    df.to_csv(RAW_DATA_DIR / "btc_raw.csv", index=False)
+    
     logging.info("Data mentah berhasil disimpan di: %s", file_path)
     return file_path
 
 
 if __name__ == "__main__":
     try:
-        raw_df = fetch_bitcoin_data()
+        raw_df = get_crypto_raw_data()
         save_raw_data(raw_df)
-    except Exception as err:
-        logging.critical("Pipeline Ingestion gagal: %s", err)
+    except Exception as exc:
+        logging.critical("Pipeline Ingestion gagal: %exc", exc)
         sys.exit(1)
