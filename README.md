@@ -27,3 +27,12 @@ Struktur repositori mengadopsi konvensi industri berbasis standardisasi Data Sci
 ├── requirements.txt     # Daftar dependensi pustaka Python
 ├── .gitignore           # File pengabaian Git (data besar/cache)
 └── README.md            # Dokumentasi utama proyek
+
+## Pipeline Data Otomatis (LK-04)
+
+Pipeline ini dirancang untuk penarikan data dinamis BTC/USD berkala dari CoinGecko Public REST API guna mendukung deteksi drift dan pelatihan kontinu (Continual Learning).
+
+### 1. Ingestion Data Mentah
+Mengambil data pasar mentah terbaru (harga penutupan, volume transaksi 24 jam, dan market cap) secara periodik dan non-destruktif:
+```bash
+python src/ingest_data.py
