@@ -30,9 +30,9 @@ Struktur repositori mengadopsi konvensi industri berbasis standardisasi Data Sci
 
 ## Pipeline Data Otomatis (LK-04)
 
-Pipeline ini dirancang untuk penarikan data deret waktu BTC/USD berkala guna mendukung deteksi drift dan pelatihan kontinu (Continual Learning).
+Pipeline ini dirancang untuk penarikan data dinamis BTC/USD berkala dari CoinGecko Public REST API guna mendukung deteksi drift dan pelatihan kontinu (Continual Learning).
 
-### 1. Ingestion Data
-Untuk menarik data pasar mentah terbaru dari Binance API secara periodik:
+### 1. Ingestion Data Mentah
+Mengambil data pasar mentah terbaru (harga penutupan, volume transaksi 24 jam, dan market cap) secara periodik dan non-destruktif:
 ```bash
 python src/ingest_data.py
