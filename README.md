@@ -27,3 +27,12 @@ Struktur repositori mengadopsi konvensi industri berbasis standardisasi Data Sci
 ├── requirements.txt     # Daftar dependensi pustaka Python
 ├── .gitignore           # File pengabaian Git (data besar/cache)
 └── README.md            # Dokumentasi utama proyek
+
+## Pipeline Data Otomatis (LK-04)
+
+Pipeline ini dirancang untuk penarikan data deret waktu BTC/USD berkala guna mendukung deteksi drift dan pelatihan kontinu (Continual Learning).
+
+### 1. Ingestion Data
+Untuk menarik data pasar mentah terbaru dari Binance API secara periodik:
+```bash
+python src/ingest_data.py
