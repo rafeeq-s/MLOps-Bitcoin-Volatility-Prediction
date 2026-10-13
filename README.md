@@ -29,11 +29,47 @@ Struktur repositori mengadopsi konvensi industri berbasis standardisasi Data Sci
 └── README.md            # Dokumentasi utama proyek
 ```
 
-## Pipeline Data Otomatis (LK-04)
+## 2. Pipeline Data Otomatis
 
 Pipeline ini dirancang untuk penarikan data dinamis BTC/USD berkala dari CoinGecko Public REST API guna mendukung deteksi drift dan pelatihan kontinu (Continual Learning).
 
-### 1. Ingestion Data Mentah
+### 2.1 Ingestion Data Mentah
 Mengambil data pasar mentah terbaru (harga penutupan, volume transaksi 24 jam, dan market cap) secara periodik dan non-destruktif:
 ```bash
 python src/ingest_data.py
+```
+### 2.2 Prapemrosesan Data (Data Preprocessing)
+Setelah data mentah terkumpul, skrip pemrosesan dijalankan secara sistematis (src/preprocess.py) untuk memastikan kualitas data siap pakai pada tahap pemodelan:
+Setelah data mentah terkumpul, skrip pemrosesan dijalankan secara sistematis (src/preprocess.py) untuk memastikan kualitas data siap pakai pada tahap pemodelan:
+
+  1. Deduplikasi Baris: Menghilangkan data duplikat berdasarkan pencatatan waktu (timestamp).
+  2. Standardisasi Waktu: Mengubah format waktu ke standar UTC (datetime64[ns, UTC]).
+  3. Penanganan Missing Values: Menerapkan metode Forward Fill (ffill) guna mencegah terjadinya look-ahead bias atau data leakage pada analisis deret waktu (time-series).
+  4. Penyimpanan Terstruktur: Menyimpan hasil pembersihan ke dalam direktori data/processed/btc_clean_latest.csv.
+
+Perintah eksekusi pemrosesan data:
+```bash
+python src/preprocess.py
+```
+
+### 3. Manajemen Versi Data dengan DVC
+Dalam proyek MLOps, pelacakan versi dataset sangat krusial untuk menjamin reproduksibilitas model (model reproducibility). Tanpa versioning yang tepat, performa model yang berubah di kemudian hari tidak dapat ditelusuri kembali ke asal usul dataset pelatihannya.
+
+Langkah Implementasi:
+  1. Inisialisasi DVC
+     ```bash
+     dvc init
+     git add .dvc .dvcignore
+     git commit -m "chore: initialize DVC"
+     ```
+  2. Tracking Dataset Mentah:
+     ```bash
+     dvc add data/raw/btc_raw_20261013_010602.csv
+     git add data/raw/btc_raw_20261013_010602.csv.dvc data/raw/.gitignore
+     git commit -m "feat(data): track raw dataset version with DVC"
+     ```
+  3. Simulasi Continual Learning & Audit Perubahan Versi:
+     Setelah melakukan penambahan data baru secara berkala, silsilah data diverifikasi menggunakan:
+     ```bash
+     dvc diff
+     ```
