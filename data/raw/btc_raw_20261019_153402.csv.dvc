@@ -1,0 +1,5 @@
+outs:
+- md5: 5e0b41b9d54177bfe1078174a85e666f
+  size: 14558
+  hash: md5
+  path: btc_raw_20261019_153402.csv

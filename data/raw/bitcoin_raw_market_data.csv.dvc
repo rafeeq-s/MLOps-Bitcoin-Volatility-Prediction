@@ -1,0 +1,5 @@
+outs:
+- md5: 21b3f8a620b141edd9c4a353766b44bf
+  size: 24210
+  hash: md5
+  path: bitcoin_raw_market_data.csv
