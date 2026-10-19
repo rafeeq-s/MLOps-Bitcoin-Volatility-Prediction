@@ -1,0 +1,22 @@
+artifact_path: /workspaces/MLOps-Bitcoin-Volatility-Prediction/mlruns/1/models/m-e3ac9dfb254f43f8b0ba9b83992a070a/artifacts
+flavors:
+  python_function:
+    data: model.ubj
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.xgboost
+    python_version: 3.10.18
+  xgboost:
+    code: null
+    data: model.ubj
+    model_class: xgboost.sklearn.XGBRegressor
+    model_format: ubj
+    xgb_version: 3.2.0
+mlflow_version: 3.17.1
+model_id: m-e3ac9dfb254f43f8b0ba9b83992a070a
+model_size_bytes: 58493
+model_uuid: m-e3ac9dfb254f43f8b0ba9b83992a070a
+prompts: null
+run_id: c82b342b1b534ecf9bdbb95daaf2cc4e
+utc_time_created: '2026-10-19 15:51:18.217121'
