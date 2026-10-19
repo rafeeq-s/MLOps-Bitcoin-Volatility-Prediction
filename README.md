@@ -73,6 +73,7 @@ Langkah Implementasi:
      ```bash
      dvc diff
      ```
+<<<<<<< HEAD
 
 ### 4. Experiment Tracking & Model Registry (LK-06)
 Sistem menggunakan **MLflow** untuk mencatat parameter, metrik evaluasi ($RMSE, MAE, MAPE$), dan artefak model pelatihan secara terstruktur.
@@ -81,3 +82,5 @@ Sistem menggunakan **MLflow** untuk mencatat parameter, metrik evaluasi ($RMSE, 
 - **Registered Model**: `BitcoinPriceXGBoostModel`
 - **Hyperparameter Tuning**: Dijalankan 3 variasi run (XGBoost Regressor) dengan variasi `n_estimators`, `max_depth`, dan `learning_rate`.
 - **Model Terpilih**: Run dengan `max_depth=5`, `learning_rate=0.03`, dan `n_estimators=100` menghasilkan performa terbaik ($MAPE \le 3.0\%$) dan dipromosikan ke MLflow Model Registry.
+=======
+>>>>>>> e1f7f6187a217f62f8758fcc754575d598d603fa
