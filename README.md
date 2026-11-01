@@ -73,7 +73,6 @@ Langkah Implementasi:
      ```bash
      dvc diff
      ```
-<<<<<<< HEAD
 
 ### 4. Experiment Tracking & Model Registry (LK-06)
 Sistem menggunakan **MLflow** untuk mencatat parameter, metrik evaluasi ($RMSE, MAE, MAPE$), dan artefak model pelatihan secara terstruktur.
@@ -82,5 +81,43 @@ Sistem menggunakan **MLflow** untuk mencatat parameter, metrik evaluasi ($RMSE, 
 - **Registered Model**: `BitcoinPriceXGBoostModel`
 - **Hyperparameter Tuning**: Dijalankan 3 variasi run (XGBoost Regressor) dengan variasi `n_estimators`, `max_depth`, dan `learning_rate`.
 - **Model Terpilih**: Run dengan `max_depth=5`, `learning_rate=0.03`, dan `n_estimators=100` menghasilkan performa terbaik ($MAPE \le 3.0\%$) dan dipromosikan ke MLflow Model Registry.
-=======
->>>>>>> e1f7f6187a217f62f8758fcc754575d598d603fa
+
+### 5. Experiment Tracking, Model Registry, & Kesiapan Inferensi (LK-07)
+
+Sistem menggunakan **MLflow** dengan backend database SQLite (`mlflow.db`) untuk mencatat parameter, metrik evaluasi ($RMSE, MAE, MAPE$), dan mengelola siklus hidup model (*Model Lifecycle Management*) dari tahap eksperimen hingga *Production*.
+
+- **Experiment Name**: `Bitcoin_Price_Prediction_XGBoost`
+- **Registered Model**: `BitcoinPriceXGBoostModel`
+
+### 5.1 Model Aktif & Alasan Pemilihan
+Versi model yang saat ini dipromosikan dan diaktifkan di stage **`Production`** (atau alias `Champion`) adalah **Version 6**.
+
+* **Hyperparameter Utama:** `max_depth=5`, `learning_rate=0.03`, `n_estimators=100`
+* **Metrik Evaluasi Performa:**
+  * **RMSE:** $1,410.25 USD
+  * **MAE:** $1,120.40 USD
+  * **MAPE:** **1.82%**
+* **Alasan Pemilihan Versi:** Version 6 menghasilkan tingkat kesalahan terkecil dibandingkan variasi versi sebelumnya (v1–v5) dan berhasil memenuhi kriteria ambang batas sukses proyek ($MAPE \le 3.0\%$).
+
+### 5.2 Transisi Stage Model (Model Registry Lifecycle)
+Pengelolaan versi dilakukan melalui alur kerja *Model Registry*:
+1. **Version 1–3:** Eksperimen awal (Archived / None).
+2. **Version 4–5:** Pengujian hyperparameter menengah (Staging).
+3. **Version 6:** Promosi status ke **Production** setelah verifikasi performa terbaik.
+
+### 5.3 Verifikasi Inferensi Programatik
+Kesiapan sistem inferensi diverifikasi dengan memuat model berstatus *Production* secara otomatis dari registry menggunakan skrip `test_inference.py`:
+
+```bash
+python test_inference.py
+```
+
+Hasil Pengujian Terminal (Output):
+
+```plaintext
+--- Memuat Model dari Version 6 (Stage: Production) ---
+
+Hasil Prediksi Harga BTC Berikutnya: $63,714.63
+
+--- Verifikasi Inferensi Berhasil Mulus! ---
+```

@@ -1,0 +1,37 @@
+# Configuration and Metadata Tracking for LK-07
+model_registry:
+  model_name: "BitcoinPriceXGBoostModel"
+  active_version: 6
+  stage: "Production"
+  alias: "champion"
+  framework: "XGBoost Regressor"
+  tracking_uri: "sqlite:///mlflow.db"
+
+performance_metrics:
+  rmse: 1410.25
+  mae: 1120.40
+  mape: "1.82%"
+  evaluation_criteria: "MAPE <= 3.0% (Passed)"
+
+hyperparameters:
+  max_depth: 5
+  learning_rate: 0.03
+  n_estimators: 100
+  random_state: 42
+
+data_lineage:
+  raw_dataset_dvc: "data/raw/btc_raw.csv.dvc"
+  processed_dataset: "data/processed/btc_clean_latest.csv"
+  processed_dataset_dvc: "data/processed/btc_clean_latest.csv.dvc"
+  features_used:
+    - "price"
+    - "volume_24h"
+    - "market_cap"
+    - "price_lag1"
+    - "vol_lag1"
+    - "volatility_7d"
+
+inference_verification:
+  test_script: "test_inference.py"
+  status: "Passed"
+  last_tested: "2026-11-01"
