@@ -42,6 +42,8 @@ def load_and_preprocess_data(data_path):
     return X_train, X_test, y_train, y_test
 
 def train_and_log_model(data_path, n_estimators, max_depth, learning_rate):
+    mlflow.set_tracking_uri("sqlite:///mlflow.db")
+
     # Set MLflow Experiment
     mlflow.set_experiment("Bitcoin_Price_Prediction_XGBoost")
     
