@@ -8,23 +8,29 @@ import mlflow
 import mlflow.xgboost
 
 def train_and_log_model(data_path, n_estimators, max_depth, learning_rate):
-    # Dapatkan absolute path direktori root proyek secara dinamis
     project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
     db_path = os.path.join(project_root, "mlflow.db")
     
-    # Gunakan SQLite URI dengan path terisolasi
     mlflow.set_tracking_uri(f"sqlite:///{db_path}")
     mlflow.set_experiment("Bitcoin_Price_Prediction_XGBoost")
 
-    # 1. Load Data
+    # 1. Load Data Terbaru (atau fallback ke data paling baru di data/processed/)
     if not os.path.exists(data_path):
-        raise FileNotFoundError(f"Data tidak ditemukan di path: {data_path}")
+        processed_dir = os.path.join(project_root, "data/processed")
+        files = [os.path.join(processed_dir, f) for f in os.listdir(processed_dir) if f.startswith("btc_clean_") and f.endswith(".csv")]
+        if files:
+            data_path = max(files, key=os.path.getmtime)
+        else:
+            raise FileNotFoundError(f"Data tidak ditemukan di path: {data_path}")
 
     df = pd.read_csv(data_path)
     
-    # Menentukan fitur dan target
-    features = [col for col in df.columns if col not in ['price', 'timestamp', 'date']]
-    X = df[features]
+    # Filter fitur: Ambil HANYA kolom numerik dan kecualikan kolom target 'price' serta kolom waktu/date/datetime
+    exclude_cols = ['price', 'timestamp', 'date', 'datetime']
+    feature_cols = [col for col in df.columns if col not in exclude_cols]
+    
+    # Seleksi hanya tipe data numerik (int, float) untuk XGBoost
+    X = df[feature_cols].select_dtypes(include=[np.number])
     y = df['price']
 
     # Split Train/Test (80:20)
@@ -34,7 +40,6 @@ def train_and_log_model(data_path, n_estimators, max_depth, learning_rate):
 
     # 2. Train Model
     with mlflow.start_run():
-        # Log Hyperparameters
         mlflow.log_params({
             "n_estimators": n_estimators,
             "max_depth": max_depth,
@@ -63,7 +68,7 @@ def train_and_log_model(data_path, n_estimators, max_depth, learning_rate):
         }
         mlflow.log_metrics(metrics)
 
-        # 5. Log Model Artifact tanpa path absolut
+        # 5. Log Model Artifact
         mlflow.xgboost.log_model(
             xgb_model=model,
             artifact_path="model"
