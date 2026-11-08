@@ -80,8 +80,7 @@ def train_and_log_model(data_path, n_estimators, max_depth, learning_rate):
         # 5. Log Model Artifact
         mlflow.xgboost.log_model(
             xgb_model=model,
-            artifact_path="model",
-            registered_model_name="BitcoinPriceXGBoostModel"
+            name="model",  # atau artifact_path="model"
         )
         
         print(f"Run Berhasil! RMSE: {rmse:.2f} | MAE: {mae:.2f} | MAPE: {mape:.2f}%")
