@@ -2,28 +2,27 @@ import os
 import mlflow
 from mlflow.tracking import MlflowClient
 
-# Set tracking URI ke database SQLite lokal
-mlflow.set_tracking_uri("sqlite:///mlflow.db")
+# Dapatkan absolute path direktori root proyek secara dinamis
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
+db_path = os.path.join(project_root, "mlflow.db")
+
+mlflow.set_tracking_uri(f"sqlite:///{db_path}")
 client = MlflowClient()
 
-THRESHOLD_MAPE = 3.0  # Threshold sesuai LK-01 (MAPE <= 3.0%)
+THRESHOLD_MAPE = 3.0  # Threshold sesuai kriteria LK-01 (MAPE <= 3.0%)
 
 def evaluate_and_register():
-    # Ambil run terbaru dari experiment_id "1" (atau search secara global)
+    # Ambil run terbaru dari experiment
+    experiment = client.get_experiment_by_name("Bitcoin_Price_Prediction_XGBoost")
+    if not experiment:
+        raise ValueError("Experiment 'Bitcoin_Price_Prediction_XGBoost' tidak ditemukan.")
+
     runs = client.search_runs(
-        experiment_ids=["1"],
+        experiment_ids=[experiment.experiment_id],
         order_by=["attribute.start_time DESC"],
         max_results=1
     )
     
-    if not runs:
-        # Fallback jika ID tidak ketemu
-        runs = client.search_runs(
-            experiment_ids=["0"],
-            order_by=["attribute.start_time DESC"],
-            max_results=1
-        )
-        
     if not runs:
         raise ValueError("Tidak ada run MLflow yang ditemukan di mlflow.db.")
         
@@ -40,7 +39,7 @@ def evaluate_and_register():
         model_name = "BitcoinPriceXGBoostModel"
         model_uri = f"runs:/{run_id}/model"
         
-        # Register model & transition ke Staging
+        # Mendaftarkan model dan mempromosikan ke Staging
         mv = mlflow.register_model(model_uri, model_name)
         client.transition_model_version_stage(
             name=model_name,
