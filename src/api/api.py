@@ -1,5 +1,6 @@
-import os
+﻿import os
 import pandas as pd
+import numpy as np
 import mlflow
 import mlflow.pyfunc
 from fastapi import FastAPI, HTTPException
@@ -8,7 +9,7 @@ app = FastAPI(title="Bitcoin Price & Volatility Prediction API")
 
 MLFLOW_TRACKING_URI = os.getenv("MLFLOW_TRACKING_URI", "http://mlflow-server:5000")
 MODEL_NAME = os.getenv("MODEL_NAME", "BitcoinPriceXGBoostModel")
-MODEL_STAGE = os.getenv("MODEL_STAGE", "Production")
+MODEL_STAGE = os.getenv("MODEL_STAGE", "production")
 
 mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
 
@@ -24,7 +25,7 @@ def health_check():
 @app.get("/predict/latest")
 def predict_latest():
     try:
-        model_uri = f"models:/{MODEL_NAME}/{MODEL_STAGE}"
+        model_uri = f"models:/{MODEL_NAME}@{MODEL_STAGE}"
         model = mlflow.pyfunc.load_model(model_uri)
 
         data_path = "data/processed/btc_clean_latest.csv"
@@ -32,9 +33,9 @@ def predict_latest():
             raise FileNotFoundError(f"Dataset tidak ditemukan di {data_path}")
 
         df = pd.read_csv(data_path)
-        X_latest = df.select_dtypes(include=["number"]).tail(1)
-        if "target" in X_latest.columns:
-            X_latest = X_latest.drop(columns=["target"])
+        exclude_cols = ['price', 'timestamp', 'date', 'datetime']
+        feature_cols = [col for col in df.columns if col not in exclude_cols]
+        X_latest = df[feature_cols].select_dtypes(include=[np.number]).tail(1)
 
         prediction = model.predict(X_latest)
 

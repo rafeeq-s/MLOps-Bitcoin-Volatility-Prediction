@@ -1,17 +1,16 @@
-version: "3.8"
+﻿
 
 services:
   mlflow-server:
-    image: python:3.10-slim
+    image: ghcr.io/mlflow/mlflow:latest
     container_name: btc-mlflow-server
     working_dir: /mlflow
     command: >
-      bash -c "pip install --no-cache-dir mlflow==2.16.0 &&
-               mlflow server
-               --backend-store-uri sqlite:///mlflow_db/mlflow.db
-               --default-artifact-root /mlflow/mlartifacts
-               --host 0.0.0.0
-               --port 5000"
+      mlflow server
+      --backend-store-uri sqlite:///mlflow_db/mlflow.db
+      --default-artifact-root /mlflow/mlartifacts
+      --host 0.0.0.0
+      --port 5000 --allowed-hosts "*"
     ports:
       - "5000:5000"
     volumes:
@@ -23,8 +22,8 @@ services:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/health')"]
       interval: 10s
       timeout: 5s
-      retries: 5
-      start_period: 25s
+      retries: 10
+      start_period: 15s
     restart: unless-stopped
 
   api-service:
@@ -37,7 +36,7 @@ services:
     environment:
       - MLFLOW_TRACKING_URI=http://mlflow-server:5000
       - MODEL_NAME=BitcoinPriceXGBoostModel
-      - MODEL_STAGE=Production
+      - MODEL_STAGE=production
     volumes:
       - ./data:/app/data
       - mlflow_artifacts_data:/mlflow/mlartifacts
