@@ -122,7 +122,15 @@ Hasil Prediksi Harga BTC Berikutnya: $63,714.63
 --- Verifikasi Inferensi Berhasil Mulus! ---
 ```
 
-@"
+### 5.4 Otomatisasi End-to-End Pipeline & CI/CD Trigger (LK-08)
+
+Sistem menerapkan prinsip **Code as a Trigger** menggunakan **GitHub Actions** (`.github/workflows/`) untuk mengotomatisasi pengujian, pelatihan ulang (*retraining*), validasi kualitas model, dan pendaftaran ke MLflow Model Registry setiap kali terjadi perubahan kode (*push* / *pull request*).
+
+### Alur Kerja Pipeline Otomatis
+1. **Automated Testing Gate (`pytest`):** Menjalankan pengujian unit pada skrip prapemrosesan dan struktur pipeline (`tests/test_pipeline.py`) untuk mencegah kegagalan regresi kode sebelum proses pelatihan dimulai.
+2. **Automated Retraining & DVC Integration:** Mengeksekusi pelatihan ulang model XGBoost menggunakan snapshot data ter-versioning secara deterministik untuk memitigasi *data drift* dan *model decay*.
+3. **Evaluation Gatekeeper ($MAPE \le 3.0\%$):** Memvalidasi metrik performa model baru secara otomatis terhadap ambang batas kualitas. Jika evaluasi gagal, alur *deployment* otomatis dibatalkan untuk mencegah *silent failures* di produksi.
+4. **Auto-Registry Update:** Mendaftarkan artefak model yang lolos ambang batas evaluasi ke **MLflow Model Registry** dengan silsilah (*lineage*) penuh yang tertaut ke commit Git dan versi dataset DVC.
 
 ## 6. Orkestrasi Layanan Terintegrasi dengan Docker Compose (LK-09)
 
