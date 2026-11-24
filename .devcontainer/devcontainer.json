@@ -1,6 +1,9 @@
 {
   "name": "Python 3.10 MLOps",
   "image": "mcr.microsoft.com/devcontainers/python:1-3.10-bullseye",
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:4.1.3": {}
+  },
   "customizations": {
     "vscode": {
       "extensions": [
