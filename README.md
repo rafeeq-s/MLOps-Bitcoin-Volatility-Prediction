@@ -121,3 +121,15 @@ Hasil Prediksi Harga BTC Berikutnya: $63,714.63
 
 --- Verifikasi Inferensi Berhasil Mulus! ---
 ```
+
+@"
+
+## 6. Orkestrasi Layanan Terintegrasi dengan Docker Compose (LK-09)
+
+Sistem inferensi dan pelacakan model diorkestrasi menggunakan **Docker Compose** dengan dua layanan utama dalam custom bridge network ``btc-mlops-network``:
+1. **``mlflow-server``**: Server MLflow Tracking & Model Registry pada port ``5000`` dengan penyimpanan persisten berbasis Docker Volume (``btc-mlflow-db-vol`` dan ``btc-mlflow-artifacts-vol``).
+2. **``api-service``**: Layanan REST API berbasis FastAPI pada port ``8000`` yang terhubung ke ``mlflow-server`` melalui *service discovery* (``http://mlflow-server:5000``) untuk memuat model alias ``@production``.
+
+### Menjalankan Seluruh Sistem
+``````bash
+docker compose up -d --build

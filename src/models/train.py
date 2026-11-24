@@ -1,4 +1,4 @@
-import argparse
+﻿import argparse
 import os
 import pandas as pd
 import numpy as np
@@ -11,7 +11,7 @@ def train_and_log_model(data_path, n_estimators, max_depth, learning_rate):
     project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
     db_path = os.path.join(project_root, "mlflow.db")
     
-    mlflow.set_tracking_uri(f"sqlite:///{db_path}")
+    mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI", f"sqlite:///{db_path}"))
     mlflow.set_experiment("Bitcoin_Price_Prediction_XGBoost")
 
     # 1. Load Data Terbaru (atau fallback ke data paling baru di data/processed/)

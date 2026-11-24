@@ -1,0 +1,59 @@
+﻿
+
+services:
+  mlflow-server:
+    image: ghcr.io/mlflow/mlflow:latest
+    container_name: btc-mlflow-server
+    working_dir: /mlflow
+    command: >
+      mlflow server
+      --backend-store-uri sqlite:///mlflow_db/mlflow.db
+      --default-artifact-root /mlflow/mlartifacts
+      --host 0.0.0.0
+      --port 5000 --allowed-hosts "*"
+    ports:
+      - "5000:5000"
+    volumes:
+      - mlflow_db_data:/mlflow/mlflow_db
+      - mlflow_artifacts_data:/mlflow/mlartifacts
+    networks:
+      - mlops-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+    restart: unless-stopped
+
+  api-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: btc-inference-api
+    ports:
+      - "8000:8000"
+    environment:
+      - MLFLOW_TRACKING_URI=http://mlflow-server:5000
+      - MODEL_NAME=BitcoinPriceXGBoostModel
+      - MODEL_STAGE=production
+    volumes:
+      - ./data:/app/data
+      - mlflow_artifacts_data:/mlflow/mlartifacts
+    depends_on:
+      mlflow-server:
+        condition: service_healthy
+    networks:
+      - mlops-network
+    restart: unless-stopped
+
+networks:
+  mlops-network:
+    driver: bridge
+    name: btc-mlops-network
+
+volumes:
+  mlflow_db_data:
+    name: btc-mlflow-db-vol
+  mlflow_artifacts_data:
+    name: btc-mlflow-artifacts-vol
