@@ -8,3 +8,4 @@ uvicorn
 pydantic
 pytest
 mlflow
+prometheus-client
