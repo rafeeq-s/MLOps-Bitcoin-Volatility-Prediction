@@ -25,14 +25,56 @@
     restart: unless-stopped
 
   api-service:
-    image: btc-mlflow-model-serve:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
     ports:
-      - "8001-8003:8080"
+      - "8001-8003:8000"
+    environment:
+      - MLFLOW_TRACKING_URI=http://mlflow-server:5000
+      - MODEL_NAME=BitcoinPriceXGBoostModel
+      - MODEL_STAGE=production
+    volumes:
+      - ./data:/app/data
+      - mlflow_artifacts_data:/mlflow/mlartifacts
     depends_on:
       mlflow-server:
         condition: service_healthy
     deploy:
       replicas: 3
+    networks:
+      - mlops-network
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: btc-prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+    ports:
+      - "9090:9090"
+    depends_on:
+      - api-service
+    networks:
+      - mlops-network
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: btc-grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
     networks:
       - mlops-network
     restart: unless-stopped
@@ -47,3 +89,7 @@ volumes:
     name: btc-mlflow-db-vol
   mlflow_artifacts_data:
     name: btc-mlflow-artifacts-vol
+  prometheus_data:
+    name: btc-prometheus-vol
+  grafana_data:
+    name: btc-grafana-vol

@@ -154,3 +154,14 @@ curl -X POST http://localhost:8001/invocations \
   -H "Content-Type: application/json" \
   -d '{"dataframe_split": {"columns": ["volume_24h", "market_cap"], "data": [[10276802932.34, 1527501792367.74]]}}'
 ```
+
+## 8. Observability & Model Monitoring dengan Prometheus & Grafana (LK-11)
+
+Sistem inferensi dipantau secara *real-time* menggunakan **Prometheus** (port `9090`) dan **Grafana** (port `3000`) dalam jaringan `btc-mlops-network`:
+* **Prometheus (`prometheus.yml`):** Melakukan *scraping* endpoint `/metrics` secara berkala (interval 5 detik) dari seluruh replika `api-service` (`api-service-1`, `api-service-2`, dan `api-service-3`).
+* **Grafana Dashboard:** Memvisualisasikan **Throughput (RPS)**, **Latensi Inferensi**, **Konsumsi RAM Kontainer**, serta **Skor Prediksi Harga BTC (`btc_predicted_price_usd`)** untuk mendeteksi potensi *Data Drift* dan *Model Decay*.
+
+### Menjalankan Stack Lengkap
+```bash
+docker compose up -d --build
+```
