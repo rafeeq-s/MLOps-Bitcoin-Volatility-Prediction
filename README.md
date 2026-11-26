@@ -141,3 +141,16 @@ Sistem inferensi dan pelacakan model diorkestrasi menggunakan **Docker Compose**
 ### Menjalankan Seluruh Sistem
 ``````bash
 docker compose up -d --build
+``````
+## 7. Model Serving & Horizontal Scaling dengan Docker Compose (LK-10)
+
+Model produksi (`BitcoinPriceXGBoostModel@production`) dikemas menjadi Docker Image mandiri menggunakan `mlflow models build-docker` (`btc-mlflow-model-serve:latest`) dan dijalankan secara horizontal menggunakan fitur replikasi pada **Docker Compose** (`deploy.replicas: 3`).
+
+### Mengakses Endpoint API
+Ketiga replika layanan inferensi dipetakan ke port host `8001`, `8002`, dan `8003` dengan endpoint standar MLflow `/invocations`:
+
+```bash
+curl -X POST http://localhost:8001/invocations \
+  -H "Content-Type: application/json" \
+  -d '{"dataframe_split": {"columns": ["volume_24h", "market_cap"], "data": [[10276802932.34, 1527501792367.74]]}}'
+```
